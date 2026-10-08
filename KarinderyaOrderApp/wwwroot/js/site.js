@@ -1,4 +1,11 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-confirm-modal]').forEach(modal => {
+        modal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            if (!button) return;
 
-// Write your JavaScript code.
+            modal.querySelector('[data-confirm-name]').textContent = button.dataset.confirmName;
+            modal.querySelector('form').action = button.dataset.confirmAction;
+        });
+    });
+});

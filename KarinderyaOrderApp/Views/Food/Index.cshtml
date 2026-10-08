@@ -1,0 +1,210 @@
+﻿@model KarinderyaOrderApp.ViewModels.Food.IndexFoodViewModel
+
+@{
+    ViewData["Title"] = "Foods";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Foods</h1>
+    <a asp-action="Create" class="btn btn-primary">+ Add Food</a>
+</div>
+
+<!-- SEARCH -->
+<form asp-action="Index" method="get" class="row g-2 mb-3">
+    <input type="hidden" name="tab" value="@Model.Tab" />
+    <div class="col-12 col-md-6 col-lg-4">
+        <input type="search" name="searchTerm" value="@Model.SearchTerm" class="form-control"
+               placeholder="Search name or description..." />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            <a asp-action="Index" asp-route-tab="@Model.Tab" class="btn btn-outline-secondary">Clear</a>
+        }
+    </div>
+</form>
+
+<!-- TAB HEADERS (links, so the selected tab and page survive a reload) -->
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link @(Model.IsArchivedTab ? "" : "active")"
+           aria-current="@(Model.IsArchivedTab ? null : "page")"
+           asp-action="Index" asp-route-tab="active" asp-route-searchTerm="@Model.SearchTerm">
+            Active 
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(Model.IsArchivedTab ? "active" : "")"
+           aria-current="@(Model.IsArchivedTab ? "page" : null)"
+           asp-action="Index" asp-route-tab="archived" asp-route-searchTerm="@Model.SearchTerm">
+            Archived 
+        </a>
+    </li>
+</ul>
+
+<!-- TAB PAGE -->
+<div class="card shadow-sm border-top-0 rounded-top-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-center">In Stock</th>
+                    @if (!Model.IsArchivedTab)
+                    {
+                        <th class="text-center">Stock Status</th>
+                    }
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr class="@(Model.IsArchivedTab ? "text-muted" : "")">
+                        <td class="fw-semibold">@item.Name</td>
+                        <td class="@(Model.IsArchivedTab ? "" : "text-muted")">@item.Description</td>
+                        <td class="text-end">@item.Price.ToString("N2")</td>
+                        <td class="text-center">@item.QuantityInStock</td>
+
+                        @if (!Model.IsArchivedTab)
+                        {
+                            <td class="text-center">
+                                @if (item.IsInStock)
+                                {
+                                    <span class="badge text-bg-success">In stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-warning">Sold out</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="[data-confirm-modal]"
+                                        data-confirm-action="@Url.Action("Archive", "Food", new { id = item.Id })"
+                                        data-confirm-name="@item.Name">
+                                    Delete
+                                </button>
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="text-end">
+                                <form asp-action="Restore" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Restore</button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="@(Model.IsArchivedTab ? 5 : 6)" class="text-center text-muted py-4">
+                            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                            {
+                                <text>No foods match "@Model.SearchTerm".</text>
+                            }
+                            else
+                            {
+                                <text>@(Model.IsArchivedTab ? "No archived foods." : "No active foods.")</text>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    @if (Model.TotalCount > 0)
+    {
+        var start = Math.Max(1, Model.Page - 2);
+        var end = Math.Min(Model.TotalPages, Model.Page + 2);
+
+        <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <small class="text-muted">
+                Showing @Model.FirstItem–@Model.LastItem of @Model.TotalCount
+            </small>
+
+            <nav aria-label="Foods pages">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-tab="@Model.Tab" asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-page="@(Model.Page - 1)">Previous</a>
+                    </li>
+
+                    @if (start > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-tab="@Model.Tab" asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-page="1">1</a>
+                        </li>
+                        @if (start > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        }
+                    }
+
+                    @for (var p = start; p <= end; p++)
+                    {
+                        <li class="page-item @(p == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-tab="@Model.Tab" asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-page="@p">@p</a>
+                        </li>
+                    }
+
+                    @if (end < Model.TotalPages)
+                    {
+                        @if (end < Model.TotalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-tab="@Model.Tab" asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-page="@Model.TotalPages">@Model.TotalPages</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-tab="@Model.Tab" asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-page="@(Model.Page + 1)">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+<!-- Delete (archive) confirmation modal -->
+<div class="modal fade" data-confirm-modal tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Archive" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete food</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-1">Delete <strong data-confirm-name></strong>?</p>
+                    <p class="text-muted small mb-0">It will be moved to the Archived tab and hidden from ordering. You can restore it anytime.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
