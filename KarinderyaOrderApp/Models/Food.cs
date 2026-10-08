@@ -20,6 +20,8 @@ namespace KarinderyaOrderApp.Models
 
         public bool IsAvailable => QuantityInStock > 0;
 
+        public bool IsArchived { get; set; }
+
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }
