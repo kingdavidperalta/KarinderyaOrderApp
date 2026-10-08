@@ -138,5 +138,29 @@ namespace KarinderyaOrderApp.Controllers
             }
         }
 
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Archive(int id)
+        {
+            var food = await _db.Foods.FindAsync(id);
+            if (food != null)
+            {
+                food.IsArchived = true;
+                await _db.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Restore(int id)
+        {
+            var food = await _db.Foods.FindAsync(id);
+            if (food != null)
+            {
+                food.IsArchived = false;
+                await _db.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index), new { tab = "archived" });
+        }
     }
 }
