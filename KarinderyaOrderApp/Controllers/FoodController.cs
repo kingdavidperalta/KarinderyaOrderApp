@@ -54,5 +54,39 @@ namespace KarinderyaOrderApp.Controllers
 
             return View(vm);
         }
+
+        public IActionResult Create() => View(new CreateFoodViewModel());
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateFoodViewModel vm)
+        {
+            vm.Name = vm.Name?.Trim() ?? string.Empty;
+
+            if (await _db.Foods.AnyAsync(f => f.Name.ToLower() == vm.Name.ToLower()))
+                ModelState.AddModelError(nameof(vm.Name), "A food with this name already exists.");
+
+            if (!ModelState.IsValid) return View(vm);
+
+            var food = new Food
+            {
+                Name = vm.Name,
+                Description = vm.Description,
+                Price = vm.Price,
+                QuantityInStock = vm.QuantityInStock
+            };
+
+            try
+            {
+                _db.Foods.Add(food);
+                await _db.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(string.Empty, "Could not save. The name may already exist, please try again.");
+                return View(vm);
+            }
+        }
+
     }
 }
