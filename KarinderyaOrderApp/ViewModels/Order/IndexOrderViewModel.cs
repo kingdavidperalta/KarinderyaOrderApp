@@ -4,6 +4,7 @@ namespace KarinderyaOrderApp.ViewModels.Order
 {
     public class IndexOrderViewModel : PagedViewModel
     {
+
         public List<ListOrderItemViewModel> Items { get; set; } = new();
     }
     public class ListOrderItemViewModel
