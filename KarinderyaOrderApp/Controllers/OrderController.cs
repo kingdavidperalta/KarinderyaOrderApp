@@ -52,6 +52,26 @@ namespace KarinderyaOrderApp.Controllers
             return View(vm);
         }
 
-    
+        public async Task<IActionResult> Details(int id)
+        {
+            var vm = await _db.Orders.AsNoTracking()
+                .Where(o => o.Id == id)
+                .Select(o => new DetailsOrderViewModel
+                {
+                    Id = o.Id,
+                    OrderDate = o.OrderDate,
+                    Status = o.Status,
+                    Lines = o.OrderItems.Select(i => new DetailsOrderLineViewModel
+                    {
+                        FoodName = i.Food.Name,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (vm == null) return NotFound();
+            return View(vm);
+        }
     }
 }

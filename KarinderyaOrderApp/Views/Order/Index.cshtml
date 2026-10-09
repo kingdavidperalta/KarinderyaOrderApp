@@ -64,8 +64,6 @@
         </table>
     </div>
 
-    @* <partial name="_Pager" model="Model" /> *@
-
     
     <!-- PAGINATION -->
     @if (Model.TotalCount > 0)
@@ -82,7 +80,7 @@
                 <ul class="pagination pagination-sm mb-0">
                     <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
                         <a class="page-link" asp-action="Index"
-                            asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-searchTerm="@Model.SearchTerm"
                            asp-route-page="@(Model.Page - 1)">Previous</a>
                     </li>
 
@@ -130,5 +128,4 @@
             </nav>
         </div>
     }
-</div>
 </div>

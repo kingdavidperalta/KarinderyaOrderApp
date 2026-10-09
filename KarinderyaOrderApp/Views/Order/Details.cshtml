@@ -1,0 +1,45 @@
+﻿@model KarinderyaOrderApp.ViewModels.Order.DetailsOrderViewModel
+
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Order #@Model.Id <span class="badge fs-6">@Model.Status</span></h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to orders</a>
+</div>
+
+<p class="text-muted">Placed on @Model.OrderDate.ToLocalTime().ToString("MMMM dd, yyyy h:mm tt")</p>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Food</th>
+                    <th class="text-end">Unit Price (₱)</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Line Total (₱)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in Model.Lines)
+                {
+                    <tr>
+                        <td class="fw-semibold">@line.FoodName</td>
+                        <td class="text-end">@line.UnitPrice.ToString("N2")</td>
+                        <td class="text-center">@line.Quantity</td>
+                        <td class="text-end">@line.LineTotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <th colspan="2" class="text-end">Total</th>
+                    <th class="text-center">@Model.TotalQuantity</th>
+                    <th class="text-end">@Model.TotalPrice.ToString("N2")</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
